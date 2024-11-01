@@ -1,0 +1,75 @@
+[gd_scene load_steps=6 format=3 uid="uid://cuudkoawrnkky"]
+
+[ext_resource type="Script" path="res://addons/godot-rss/ui/channel_behave.gd" id="1_mldhh"]
+[ext_resource type="Texture2D" uid="uid://chmuiwtrj1xx2" path="res://addons/godot-rss/icon.svg" id="3_ha0m7"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_kasa7"]
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_gw2bf"]
+font_color = Color(0.783523, 0.783523, 0.783523, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_m5muy"]
+font_size = 12
+font_color = Color(0.783523, 0.783523, 0.783523, 1)
+
+[node name="Channel" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_mldhh")
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(1, 1)
+layout_mode = 2
+text = "Title"
+label_settings = SubResource("LabelSettings_kasa7")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+uppercase = true
+
+[node name="Desc" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(1, 1)
+layout_mode = 2
+text = "DescAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+label_settings = SubResource("LabelSettings_gw2bf")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer"]
+layout_mode = 2
+texture = ExtResource("3_ha0m7")
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+follow_focus = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Copyright" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(1, 1)
+layout_mode = 2
+label_settings = SubResource("LabelSettings_m5muy")
+horizontal_alignment = 2
+vertical_alignment = 2
+autowrap_mode = 3

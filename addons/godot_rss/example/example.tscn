@@ -1,0 +1,48 @@
+[gd_scene load_steps=3 format=3 uid="uid://cikrmqutf5kc3"]
+
+[ext_resource type="Script" path="res://addons/godot-rss/example/example_behave.gd" id="1_brele"]
+[ext_resource type="PackedScene" uid="uid://cb63bfg3uifco" path="res://addons/godot-rss/ui/feed.tscn" id="1_haoyj"]
+
+[node name="Example" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_brele")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.18
+
+[node name="Host" type="TextEdit" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "https://cyber.harvard.edu"
+placeholder_text = "RSS host"
+
+[node name="Path" type="TextEdit" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "rss/examples/rss2sample.xml"
+placeholder_text = "RSS path"
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.18
+text = "Load"
+
+[node name="Feed" parent="VBoxContainer" instance=ExtResource("1_haoyj")]
+layout_mode = 2
+size_flags_vertical = 3
+
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button" to="." method="_on_load_rss"]
