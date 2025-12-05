@@ -1,5 +1,5 @@
 @tool
-@icon("res://addons/godot-rss/icon.svg")
+@icon("res://addons/godot_rss/icon.svg")
 extends Resource
 class_name RSSEnclosure
 

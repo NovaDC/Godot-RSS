@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://chmuiwtrj1xx2"
-path="res://.godot/imported/icon.svg-4798d709403af9d9b99d8a9135f5d53d.ctex"
+path="res://.godot/imported/icon.svg-86ef936a8093af5a894a194d3be144e3.ctex"
 metadata={
 "has_editor_variant": true,
 "vram_texture": false
@@ -11,14 +11,16 @@ metadata={
 
 [deps]
 
-source_file="res://addons/godot-rss/icon.svg"
-dest_files=["res://.godot/imported/icon.svg-4798d709403af9d9b99d8a9135f5d53d.ctex"]
+source_file="res://addons/godot_rss/icon.svg"
+dest_files=["res://.godot/imported/icon.svg-86ef936a8093af5a894a194d3be144e3.ctex"]
 
 [params]
 
 compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
@@ -26,6 +28,10 @@ mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
+process/channel_remap/red=0
+process/channel_remap/green=1
+process/channel_remap/blue=2
+process/channel_remap/alpha=3
 process/fix_alpha_border=true
 process/premult_alpha=false
 process/normal_map_invert_y=false

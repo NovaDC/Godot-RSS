@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://074qo0b45pdh"]
 
-[ext_resource type="Script" path="res://addons/godot-rss/ui/item_behave.gd" id="1_7du8s"]
+[ext_resource type="Script" uid="uid://cl8g2c2p5aek3" path="res://addons/godot_rss/ui/item_behave.gd" id="1_5cmvs"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_kasa7"]
 
@@ -11,7 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 3
-script = ExtResource("1_7du8s")
+script = ExtResource("1_5cmvs")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2

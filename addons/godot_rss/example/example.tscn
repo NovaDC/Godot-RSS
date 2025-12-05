@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cikrmqutf5kc3"]
 
-[ext_resource type="Script" path="res://addons/godot-rss/example/example_behave.gd" id="1_brele"]
-[ext_resource type="PackedScene" uid="uid://cb63bfg3uifco" path="res://addons/godot-rss/ui/feed.tscn" id="1_haoyj"]
+[ext_resource type="Script" uid="uid://dbo2eh385ft26" path="res://addons/godot_rss/example/example_behave.gd" id="1_brele"]
+[ext_resource type="PackedScene" uid="uid://cb63bfg3uifco" path="res://addons/godot_rss/ui/feed.tscn" id="1_haoyj"]
 
 [node name="Example" type="PanelContainer"]
 anchors_preset = 15

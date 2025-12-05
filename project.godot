@@ -13,10 +13,10 @@ config_version=5
 config/name="Godot RSS"
 config/description="A plugin for godot that parses and displays RSS feeds in engine (and editor)."
 config/version="1.0.0.0"
-run/main_scene="res://addons/godot-rss/example/example.tscn"
-config/features=PackedStringArray("4.3", "GL Compatibility")
-boot_splash/image="res://addons/godot-rss/icon.png"
-config/icon="res://addons/godot-rss/icon.png"
+run/main_scene="uid://cikrmqutf5kc3"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/image="uid://gcf4xwnd5dv5"
+config/icon="uid://gcf4xwnd5dv5"
 
 [rendering]
 

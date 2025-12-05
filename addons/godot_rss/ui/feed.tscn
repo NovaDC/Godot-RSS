@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cb63bfg3uifco"]
 
-[ext_resource type="Script" path="res://addons/godot-rss/ui/feed_behave.gd" id="1_2r18f"]
+[ext_resource type="Script" uid="uid://cv1r1h61mobj2" path="res://addons/godot_rss/ui/feed_behave.gd" id="1_s542t"]
 
 [node name="Feed" type="PanelContainer"]
 anchors_preset = 15
@@ -8,7 +8,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_2r18f")
+script = ExtResource("1_s542t")
 
 [node name="_C" type="VBoxContainer" parent="."]
 layout_mode = 2
