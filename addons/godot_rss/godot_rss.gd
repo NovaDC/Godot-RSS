@@ -5,7 +5,7 @@ extends Resource
 
 ## RSS
 ##
-## A class used to enclose an rss feed, inclusing all it's channels. Can be generated in engine,
+## A class used to enclose an rss feed, including all it's channels. Can be generated in engine,
 ## or created using one of the included static methods to load from URLs, or files, or directly from
 ## [String]s, [PackedByteArray]s, [XMLDocument]s or [XMLNode]s.
 ## This script requires the 'GodotXML' plugin to operate.
@@ -245,7 +245,7 @@ static func html_to_bbcode(html:String) -> String:
 	return html.xml_unescape()
 
 ## Gets [PackedByteArray] data from the given [param host] URL at the given [param path].[br]
-## Due to how Godot handels http, it's important to accurately split the
+## Due to how Godot handles http, it's important to accurately split the
 ## URL's [param host] from the URL's [param path]. See [method url_split_host_path].[br]
 ## When [param port] [code]< 0[/code], the appropriate port will be automatically determined from
 ## the [param host]'s scheme, if given.
@@ -307,7 +307,7 @@ static func load_file(path:String) -> RSS:
 	return RSS.load_xml_document(XML.parse_file(path))
 
 ## Loads RSS data from the given [param host] URL at the given [param path].[br]
-## Due to how Godot handels http, it's important to accurately split the
+## Due to how Godot handles http, it's important to accurately split the
 ## URL's [param host] from the URL's [param path]. See [method url_split_host_path].[br]
 ## NOTE: This RSS feed is statically fetched and will not automatically update itself.
 ## Behaviour like this must be implemented manually.

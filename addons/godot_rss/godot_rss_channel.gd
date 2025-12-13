@@ -9,7 +9,7 @@ extends Resource
 ## Represent a [code]channel[/code] as used in a [RSS] feed. Can be generated in engine,
 ## or created using one of the included static methods to load from URLs, or files,
 ## or directly from [String]s, [PackedByteArray]s, [XMLDocument]s or [XMLNode]s.
-## This script requires the 'GodotXML' plugin to operate. 
+## This script requires the 'GodotXML' plugin to operate.
 
 ## The [XMLNode] name used for a [RSSChannel].
 const CHANNEL_TAG_NAME := "channel"
@@ -63,7 +63,7 @@ const CHANNEL_TAG_NAME := "channel"
 ## Optionally, specifies the categories of this channel as the keys,
 ## optionally with a non empty string value representing the category's domain
 ## (using either a general name or a url) that that defines that specific category's taxonomy
-## (what catagories are what and what they mean).[br]
+## (what categories are what and what they mean).[br]
 ## Some example entries for this dictionary:
 ## [codeblock]
 ## {

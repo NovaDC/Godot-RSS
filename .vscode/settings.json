@@ -19,7 +19,7 @@
 		"filetypes",
 		"fonts",
 		"fullstack",
-		"game-development",
+		"game-development", //largest support for godot and gdscript
 		"gaming-terms",
 		"git",
 		"html-symbol-entities",
@@ -51,13 +51,14 @@
 		"*.uid",
 		"**/.gitkeep",
 		"android/**",
+		"submodules/**",
 	],
 	"cSpell.ignoreRandomStrings": false,
 	"cSpell.ignoreRegExpList": [
 		//UID strings. These ids use 34 bit digits. IDK why, just how they were made.
 		"uid://[a-y0-8]{1,13}",
 		// The internal ids used in resource files
-		"((Ext)|(Sub))Resource\\([\"'][0-9a-zA-Z_]+[\"']\\)",
+		"((Ext)|(Sub))?Resource\\([\"'][0-9a-zA-Z_]+[\"']\\)",
 		"[\\[ ]id=[\"'][0-9a-zA-Z_]+[\"'][\\] ]",
 		//Default names of gdscript resources local to scenes
 		"GDScript_[a-y0-8]{1,5}", //These ids use 34 bit digits. IDK why, just how they were made.
@@ -97,6 +98,7 @@
 		"gscript:gdscript",
 		"novacd:NovaDC",
 		"novadc:NovaDC",
+		"rrs:rss",
 		"uft:utf",
 	],
 	"cSpell.unknownWords": "report-all",
