@@ -74,7 +74,7 @@ static func get_http_bytes(host:String,
 
 	path = "/" + path.lstrip("/").rstrip("/")
 
-	if http_client.request(HTTPClient.METHOD_GET, path, headers) != OK:
+	if http_client.request(HTTPClient.METHOD_GET, path, PackedStringArray(headers)) != OK:
 		return PackedByteArray()
 
 	while http_client.get_status() == HTTPClient.STATUS_REQUESTING:
@@ -90,7 +90,7 @@ static func get_http_bytes(host:String,
 	if not http_client.is_response_chunked() and http_client.get_response_body_length() < 0:
 		return PackedByteArray()
 
-	var rb = PackedByteArray()
+	var rb := PackedByteArray()
 	while http_client.get_status() == HTTPClient.STATUS_BODY:
 		rb.append_array(http_client.read_response_body_chunk())
 		http_client.poll()
@@ -119,7 +119,7 @@ static func load_url(host:String,
 					 headers:Array[String] = DEFAULT_HTTP_HEADERS,
 					 port:int = -1
 					) -> RSS:
-	var rb = await get_http_bytes(host, path, headers, port)
+	var rb := await get_http_bytes(host, path, headers, port)
 	
 	if rb.is_empty():
 		return null

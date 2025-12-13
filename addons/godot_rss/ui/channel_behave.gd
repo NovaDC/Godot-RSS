@@ -36,10 +36,11 @@ func _update():
 	
 	#Remove the example image, so it doesn't show as the real image loads.
 	channel_image.texture = null
-	var image = await channel.channel_image.get_image()
+	var image := await channel.channel_image.get_image()
 	if image != null:
-		image = ImageTexture.create_from_image(image)
-	channel_image.texture = image
+		channel_image.texture = ImageTexture.create_from_image(image)
+	else:
+		channel_image.texture = null
 	
 	for child in _managed_children:
 		_managed_children.erase(child)

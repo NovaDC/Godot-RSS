@@ -74,7 +74,7 @@ static func load_xml_node(node:XMLNode) -> RSSImageData:
 func get_image() -> Image:
 	var host := RSS.url_split_host_path(image_url)[0]
 	var path := RSS.url_split_host_path(image_url)[1]
-	var rb = await RSS.get_http_bytes(host, path)
+	var rb := await RSS.get_http_bytes(host, path)
 	if rb.is_empty():
 		return null
 	var i := Image.new()
