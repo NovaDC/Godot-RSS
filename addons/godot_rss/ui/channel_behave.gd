@@ -15,6 +15,8 @@ const _ITEM_SCENE : PackedScene = preload("res://addons/godot_rss/ui/item.tscn")
 			channel.changed.connect(_update)
 		_update()
 
+@export var image_size_max := Vector2.ONE * 64
+
 var _managed_children:Array[Control] = []
 
 @onready var item_container:Container = $VBoxContainer/ScrollContainer/VBoxContainer
@@ -39,6 +41,8 @@ func _update():
 	var image := await channel.channel_image.get_image()
 	if image != null:
 		channel_image.texture = ImageTexture.create_from_image(image)
+		var size_override := image.get_size().min(image_size_max)
+		channel_image.texture.set_size_override(size_override)
 	else:
 		channel_image.texture = null
 	
