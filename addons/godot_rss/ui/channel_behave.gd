@@ -21,7 +21,7 @@ var _managed_children:Array[Control] = []
 
 @onready var item_container:Container = $VBoxContainer/ScrollContainer/VBoxContainer
 @onready var title_label:Label = $VBoxContainer/Title
-@onready var desc_label:Label = $VBoxContainer/Desc
+@onready var desc_label:RichTextLabel = $VBoxContainer/Desc
 @onready var copyright_label:Label = $VBoxContainer/Copyright
 @onready var channel_image:TextureRect = $VBoxContainer/TextureRect
 

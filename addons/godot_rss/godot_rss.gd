@@ -11,6 +11,172 @@ class_name RSS
 ## This script requires the 'GodotXML' plugin to operate. 
 ## NOTE: This does [b]NOT[/b] support parsing ATOM feeds.
 
+static var _comment_remove := RegEx.create_from_string("<!--(.*?)-->")
+static var _cdata_strip := RegEx.create_from_string("<!\\[CDATA\\[(?<content>[^\\]]+?)\\]\\]>")
+static var _man_close_re_cache:Dictionary = {}
+static var _auto_close_re_cache:Dictionary = {}
+static var _anchor_href_capture_regex := RegEx.create_from_string("<\\s*a\\s*(?:.*?\\s*)??(href ?= ?[\"'](?<href>[^\"']+?)[\"'])(?:.*?\\s*)?>(?<content>.+?)<\\s*/\\s*a\\s*>")
+
+static func replace_html_tag_manual_closing(html:String, tag_names:Variant = ".+?", opening_with := "", closing_with := "", include_contents := true) -> String:
+	match typeof(tag_names):
+		TYPE_STRING:
+			tag_names = [tag_names]
+		TYPE_ARRAY, TYPE_PACKED_STRING_ARRAY:
+			pass
+		_:
+			assert(false)
+
+	var sub := opening_with
+	if include_contents:
+		sub += "$content"
+	sub += closing_with
+
+	for tag_name in tag_names:
+		var norm_html_tags:RegEx = null
+		if not tag_name in _man_close_re_cache:
+			norm_html_tags = RegEx.create_from_string("<\\s*" +
+														tag_name +
+														"\\s*(?:.*?\\s*)?>(?<content>.+?)<\\s*/\\s*" +
+														tag_name +
+														"\\s*>"
+														)
+			_man_close_re_cache[tag_name] = norm_html_tags
+		else:
+			norm_html_tags = _man_close_re_cache.get(tag_name)
+		html = norm_html_tags.sub(html, sub, true)
+	return html
+
+static func replace_html_tag_self_closing(html:String, tag_names:Variant = ".+?", with := "") -> String:
+	match typeof(tag_names):
+		TYPE_STRING:
+			tag_names = [tag_names]
+		TYPE_ARRAY, TYPE_PACKED_STRING_ARRAY:
+			pass
+		_:
+			assert(false)
+
+	for tag_name in tag_names:
+		var norm_html_tags:RegEx = null
+		if not tag_name in _auto_close_re_cache:
+			norm_html_tags = RegEx.create_from_string("<\\s*" + tag_name + "\\s*.*?\\s*(?:/\\s*)??>")
+			_auto_close_re_cache[tag_name] = norm_html_tags
+		else:
+			norm_html_tags = _auto_close_re_cache.get(tag_name)
+		html = norm_html_tags.sub(html, with, true)
+	return html
+
+static func html_remove_comments(html:String) -> String:
+	return _comment_remove.sub(html, "", true)
+
+static func html_strip_cdata_braces(html:String) -> String:
+	return _cdata_strip.sub(html, "$content", true)
+
+static func clean_description(html:String, bbcode_escape_braces := false, xml_unescape := true, strip_tags := true) -> String:
+	html = html_strip_cdata_braces(html)
+	html = html_remove_comments(html)
+
+	# while its quite unlikely that a rss text body would have an entire html document in it, its not impossible.
+	# just filtering out the absolutely unecessary stuff for safety...
+	var bad_elements := PackedStringArray([
+											"head",
+											"script",
+											"style",
+											"template",
+											"embed",
+											"iframe",
+											"form",
+											])
+	# removing the tags and their contents
+	html = replace_html_tag_manual_closing(html, bad_elements, "", "", false)
+
+	if strip_tags:
+		html = replace_html_tag_manual_closing(html) #all tags
+		html = replace_html_tag_self_closing(html) #all tags
+
+	if xml_unescape:
+		html = html.xml_unescape()
+
+	var buff := ""
+	for c in html:
+		match c:
+			# basically the same as String.trim_escapes()
+			# but wrapped into another loop we already have to do
+			var esc when ord(esc) <= 31:
+				pass
+			# deduplicate more then 1 space in a row,
+			# and strip spaces that occur at the very start of the string
+			# (all other kinds of whitespace are totally removed elsewhere)
+			" " when buff.length() == 0 or buff[-1] == " ":
+				pass
+			"[" when bbcode_escape_braces:
+				buff += "[lb]"
+			"]" when bbcode_escape_braces:
+				buff += "[rb]"
+			_:
+				buff += c
+	#we already stripped left spaces in the loop above, so we can save some time here
+	return buff.strip_edges(false, true)
+
+static func html_to_bbcode(html:String) -> String:
+	# We'll handle other (non useless) html tags and unescaping manually,
+	# but bbcode bracket escaping is necessary to do before we insert any bbcode tags
+	html = clean_description(html, true, false, false)
+
+	# This converts anchor tags (and only anchor tags) into a url element with a tooltip for the link it directs to
+	html = _anchor_href_capture_regex.sub(html, "[url=$href][hint=$href]$content[/hint][/url]", true)
+
+	html = replace_html_tag_self_closing(html, "wbr", "[shy]")
+	html = replace_html_tag_self_closing(html, "hr" , "[hr]" )
+	html = replace_html_tag_self_closing(html, "br" , "[br]" )
+
+	html = replace_html_tag_manual_closing(html, "p", "[p]", "[/p]")
+
+	html = replace_html_tag_manual_closing(html, ["b", "strong"], "[b]", "[/b]")
+
+	html = replace_html_tag_manual_closing(html, ["i", "em", "cite"], "[i]"    , "[/i]"    )
+	html = replace_html_tag_manual_closing(html, "address"          , "[br][i]", "[/i][br]")
+
+	html = replace_html_tag_manual_closing(html, ["u", "ins"], "[u]", "[/u]")
+
+	html = replace_html_tag_manual_closing(html, ["s", "strike", "del"], "[s]", "[/s]")
+
+	var code_style_tags := PackedStringArray(["code", "samp", "dir", "var", "tt", "kbd"])
+	html = replace_html_tag_manual_closing(html, code_style_tags, "[code]", "[/code]")
+
+	html = replace_html_tag_manual_closing(html, "blockquote", "[indent][i]", "[/i][/indent]")
+	html = replace_html_tag_manual_closing(html, "q"         , "[i]"        , "[/i]"         )
+
+	html = replace_html_tag_manual_closing(html, "mark", "[bg_color=yellow]", "[/bg_color]")
+
+	html = replace_html_tag_manual_closing(html, "center", "[center]", "[/center]")
+
+	html = replace_html_tag_manual_closing(html, "h1"        , "[font_size=22]", "[/font_size]")
+	html = replace_html_tag_manual_closing(html, ["h2", "h3"], "[font_size=20]", "[/font_size]")
+	var size_18_tags := PackedStringArray(["h4", "h5", "h6", "summary"])
+	html = replace_html_tag_manual_closing(html, size_18_tags, "[font_size=18]", "[/font_size]")
+	html = replace_html_tag_manual_closing(html, "big"       , "[font_size=16]", "[/font_size]")
+	html = replace_html_tag_manual_closing(html, "small"     , "[font_size=8]" , "[/font_size]")
+
+	html = replace_html_tag_manual_closing(html, ["ul", "menu", "dl"], "[ul]"     , "[/ul]"      )
+	html = replace_html_tag_manual_closing(html, "ol"                , "[ol]"     , "[/ol]"      )
+	html = replace_html_tag_manual_closing(html, ["li", "dd"]        , ""         , "\n"         )
+	html = replace_html_tag_manual_closing(html, "dt"                , "[indent]" , "[/indent]\n")
+
+	# While the a xml parser could handle html attrs (and tags parsing),
+	# this is a lot of extra overhead as well as possible additional security concerns
+	# for a feature that is not the main focus of this addon.
+	# As well, the amount of regex used is already pushing the boundaries of reasonable,
+	# so it better to avoid using regex any more then it already is.
+	# So, this version of this function will not support any type of xml attributes nor css styles.
+	# Unfortunately, this means the more common types of text formatting
+	# (including color, bg color, justification, size, and urls other than anchor links)
+	# arn't supported.
+
+	html = replace_html_tag_manual_closing(html) #all tags
+	html = replace_html_tag_self_closing(html) #all tags
+
+	return html.xml_unescape()
+
 ## A enum containing the days of the week mapping a RSS channel's [code]skipDays[/code] optional tag.
 enum RSSDay {
 	Sunday = 1,
@@ -116,6 +282,7 @@ static func load_file(path:String) -> RSS:
 ## Behaviour like this must be implemented manually.
 static func load_url(host:String,
 					 path := "/",
+					 description_to_bbcode := false,
 					 headers:Array[String] = DEFAULT_HTTP_HEADERS,
 					 port:int = -1
 					) -> RSS:
@@ -124,26 +291,26 @@ static func load_url(host:String,
 	if rb.is_empty():
 		return null
 	
-	return load_data(rb)
+	return load_data(rb, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [String]'s [param data]. 
-static func load_string(data:String) -> RSS:
-	return load_xml_document(XML.parse_str(data))
+static func load_string(data:String, description_to_bbcode := false) -> RSS:
+	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [PackedByteArray]'s [param data]. 
-static func load_data(data:PackedByteArray) -> RSS:
+static func load_data(data:PackedByteArray, description_to_bbcode := false) -> RSS:
 	if data.is_empty():
 		return
-	return RSS.load_xml_document(XML.parse_buffer(data))
+	return RSS.load_xml_document(XML.parse_buffer(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLDocument]'s [param data]. 
-static func load_xml_document(document:XMLDocument) -> RSS:
+static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSS:
 	if document.root == null:
 		return null
-	return load_xml_node(document.root)
+	return load_xml_node(document.root, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLNode]'s [param data]. 
-static func load_xml_node(node:XMLNode) -> RSS:
+static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSS:
 	if node.name != RSS_TAG_NAME:
 		#This isn't a rss feed at all! Perhaps you loaded html or svg data by accident?
 		return null
@@ -151,7 +318,7 @@ static func load_xml_node(node:XMLNode) -> RSS:
 	var created := RSS.new()
 	created.version = node.attributes.get(VERSION_ATTR_NAME, "")
 	for child in node.children:
-		created.channels.append(RSSChannel.load_xml_node(child))
+		created.channels.append(RSSChannel.load_xml_node(child, description_to_bbcode))
 	
 	return created
 

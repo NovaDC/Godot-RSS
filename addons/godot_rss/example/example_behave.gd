@@ -1,5 +1,7 @@
 extends Control
 
+@export var description_to_bbcode := true
+
 @onready var feed_container:Control = $VBoxContainer/Feed
 @onready var host_textedit:TextEdit = $VBoxContainer/HBoxContainer/Host
 @onready var path_textedit:TextEdit = $VBoxContainer/HBoxContainer/Path
@@ -10,4 +12,4 @@ func _process(delta: float):
 	position = Vector2.ZERO
 
 func _on_load_rss():
-	feed_container.feed = await RSS.load_url(host_textedit.text, path_textedit.text)
+	feed_container.feed = await RSS.load_url(host_textedit.text, path_textedit.text, description_to_bbcode)

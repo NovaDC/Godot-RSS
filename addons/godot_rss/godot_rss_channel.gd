@@ -113,17 +113,17 @@ const CHANNEL_TAG_NAME := "channel"
 @export var cloud_protocol:String = ""
 
 ## Loads a [RSS] feed right from a given [String]'s [param data]. 
-static func load_string(data:String) -> RSSChannel:
-	return load_xml_document(XML.parse_str(data))
+static func load_string(data:String, description_to_bbcode := false) -> RSSChannel:
+	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLDocument]'s [param data]. 
-static func load_xml_document(document:XMLDocument) -> RSSChannel:
+static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSChannel:
 	if document.root == null:
 		return null
-	return load_xml_node(document.root)
+	return load_xml_node(document.root, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLNode]'s [param data]. 
-static func load_xml_node(node:XMLNode) -> RSSChannel:
+static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSChannel:
 	var created := RSSChannel.new()
 	
 	if node.name != CHANNEL_TAG_NAME:
@@ -137,11 +137,10 @@ static func load_xml_node(node:XMLNode) -> RSSChannel:
 				created.set(child.name, child.content)
 			"description":
 				var raw_content := child.dump_str(true) if child.content == "" else child.content
-				raw_content = raw_content.replace("<description>", "")
-				raw_content = raw_content.replace("</description>", "")
-				raw_content = raw_content.strip_edges()
-				if not raw_content.contains("\n"):
-					raw_content = "".join(("\n\r".join(raw_content.split("</p>"))).split("<p>"))
+				if description_to_bbcode:
+					raw_content = RSS.html_to_bbcode(raw_content)
+				else:
+					raw_content = RSS.clean_description(raw_content)
 				created.description = raw_content
 			"cloud":
 				created.cloud_domain = child.attributes.get("domain", "")
@@ -190,6 +189,6 @@ static func load_xml_node(node:XMLNode) -> RSSChannel:
 				created.webmaster_email = child.content
 			
 			"item":
-				created.items.append(RSSItem.load_xml_node(child))
+				created.items.append(RSSItem.load_xml_node(child, description_to_bbcode))
 	
 	return created
