@@ -1,0 +1,3 @@
+[submodule "submodules/GodotXML"]
+	path = submodules/GodotXML
+	url = https://github.com/elenakrittik/GodotXML.git
