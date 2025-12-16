@@ -38,7 +38,11 @@ const RSS_TAG_NAME := "rss"
 ## The [XMLNode] attribute name used to declare the [RSS] version used.
 const VERSION_ATTR_NAME := "version"
 ## The default headers used when getting http data.
-const DEFAULT_HTTP_HEADERS:Array[String] = ["User-Agent: GodotRSSClient/1.0 (Godot)",
+const DEFAULT_HTTP_HEADERS:Array[String] = ["User-Agent: " +
+													RSSEditorPlugin.PLUGIN_NAME +
+													"Client/" +
+													RSSEditorPlugin.PLUGIN_VERSION +
+													" (Godot)",
 											"Accept: " +
 													"application/rss+xml," +
 													"text/xml," +
