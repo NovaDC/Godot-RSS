@@ -1,7 +1,7 @@
 extends Control
 
 ## If set, html descriptions be roughly converted into bbcode.
-## Otherwise, html formatting sill be stripped.
+## Otherwise, html formatting be remove entirely.
 @export var description_to_bbcode := true
 
 @onready var feed_container:Control = $VBoxContainer/Feed
@@ -16,5 +16,5 @@ func _process(_delta:float):
 func _on_load_rss():
 	feed_container.feed = await RSS.load_url(host_textedit.text,
 											path_textedit.text,
-											description_to_bbcode
+											RSS.clean_description if not description_to_bbcode else RSS.html_to_bbcode
 											)

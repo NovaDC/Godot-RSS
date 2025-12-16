@@ -111,27 +111,36 @@ const CHANNEL_TAG_NAME := "channel"
 ## Behaviour like this must be implemented manually.
 @export var cloud_protocol:String = ""
 
-## Loads a [RSS] feed right from a given [String]'s [param data].
-## If [param description_to_bbcode] is set, description text
-## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_string(data:String, description_to_bbcode := false) -> RSSChannel:
-	return load_xml_document(XML.parse_str(data), description_to_bbcode)
+## Loads a [RSS] feed right from a given [String]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it behaves the same here,
+## including how it applies recursively into all contained item
+## and channel image elements for this channel.
+static func load_string(data:String,
+						description_formatter:Callable = Callable(null, "invalid")
+						) -> RSSChannel:
+	return load_xml_document(XML.parse_str(data), description_formatter)
 
-## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
-## If [param description_to_bbcode] is set, description text
-## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSChannel:
+## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it behaves the same here,
+## including how it applies recursively into all contained item
+## and channel image elements for this channel.
+static func load_xml_document(document:XMLDocument,
+								description_formatter:Callable = Callable(null, "invalid")
+								) -> RSSChannel:
 	if document.root == null:
 		return null
-	return load_xml_node(document.root, description_to_bbcode)
+	return load_xml_node(document.root, description_formatter)
 
-## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
-## If [param description_to_bbcode] is set, description text
-## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSChannel:
+## Loads a [RSS] feed right from a given [XMLNode]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it behaves the same here,
+## including how it applies recursively into all contained item
+## and channel image elements for this channel.
+static func load_xml_node(node:XMLNode,
+							description_formatter:Callable = Callable(null, "invalid")
+							) -> RSSChannel:
 	var created := RSSChannel.new()
 
 	if node.name != CHANNEL_TAG_NAME:
@@ -145,10 +154,8 @@ static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSCh
 				created.set(child.name, child.content)
 			"description":
 				var raw_content := child.dump_str(true) if child.content == "" else child.content
-				if description_to_bbcode:
-					raw_content = RSS.html_to_bbcode(raw_content)
-				else:
-					raw_content = RSS.clean_description(raw_content)
+				if description_formatter.is_valid():
+					raw_content = description_formatter.call(raw_content)
 				created.description = raw_content
 			"cloud":
 				created.cloud_domain = child.attributes.get("domain", "")
@@ -163,7 +170,7 @@ static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSCh
 			"generator":
 				created.generating_software = child.content
 			"image":
-				created.channel_image = RSSImageData.load_xml_node(child, description_to_bbcode)
+				created.channel_image = RSSImageData.load_xml_node(child, description_formatter)
 			"lastBuildDate":
 				created.modified_date = child.content
 			"managingEditor":
@@ -197,6 +204,6 @@ static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSCh
 				created.webmaster_email = child.content
 
 			"item":
-				created.items.append(RSSItem.load_xml_node(child, description_to_bbcode))
+				created.items.append(RSSItem.load_xml_node(child, description_formatter))
 
 	return created

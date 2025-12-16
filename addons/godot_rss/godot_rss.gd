@@ -280,7 +280,8 @@ static func clean_description(desc:String,
 ## and many other common features of html.
 ## [br][br]
 ## This method is provided as a rough example that allows for the majority
-## of html text to be handled roughly. It is not suggested to be used as-is in any production environment
+## of html text to be handled roughly.
+## It is not suggested to be used as-is in any production environment
 ## without proper consideration.
 ## It is also of note that this method is not optimised for performance,
 ## using [RegEx] parsing instead of a proper xml parser,
@@ -415,10 +416,21 @@ static func load_file(path:String) -> RSS:
 ## Due to how Godot handles http, it's important to accurately split the
 ## URL's [param host] from the URL's [param path]. See [method url_split_host_path].[br]
 ## NOTE: This RSS feed is statically fetched and will not automatically update itself.
-## Behaviour like this must be implemented manually.
+## Behaviour like this must be implemented manually.[br]
+## [br]
+## [param description_formatter] is a optional [Callable] used to
+## format the text data provided by some text based fields or rss documents;
+## currently, only the descriptions or channels, items, and channel images.
+## Some feeds may prefer to provide plaintext,
+## however, others might use for advances xml or html formatting.
+## By supplying this paramiter with a valid [Callable] that accepts a single argument
+## of the text to format and returns a formatted version of that text,
+## all of these fields will receive the same type of text formatting adjustments.
+## If the [param description_formatter] is not [Callable.is_valid], like it is by default,
+## [param description_formatter] will be skipped and the text will pass through unformatted.
 static func load_url(host:String,
 					path := "/",
-					description_to_bbcode := false,
+					description_formatter:Callable = Callable(null, "invalid"),
 					headers:Array[String] = DEFAULT_HTTP_HEADERS,
 					port:int = -1
 					) -> RSS:
@@ -427,38 +439,42 @@ static func load_url(host:String,
 	if rb.is_empty():
 		return null
 
-	return load_data(rb, description_to_bbcode)
+	return load_data(rb, description_formatter)
 
-## Loads a [RSS] feed right from a given [String]'s [param data].
-## If [param description_to_bbcode] is set, description text
-## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_string(data:String, description_to_bbcode := false) -> RSS:
-	return load_xml_document(XML.parse_str(data), description_to_bbcode)
+## Loads a [RSS] feed right from a given [String]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it applies the same for [method RSS.load_url] as it does here.
+static func load_string(data:String,
+						description_formatter:Callable = Callable(null, "invalid")
+						) -> RSS:
+	return load_xml_document(XML.parse_str(data), description_formatter)
 
-## Loads a [RSS] feed right from a given [PackedByteArray]'s [param data].
-## If [param description_to_bbcode] is set, description text
-## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_data(data:PackedByteArray, description_to_bbcode := false) -> RSS:
+## Loads a [RSS] feed right from a given [PackedByteArray]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it applies the same for [method RSS.load_url] as it does here.
+static func load_data(data:PackedByteArray,
+					description_formatter:Callable = Callable(null, "invalid")
+					) -> RSS:
 	if data.is_empty():
 		return
-	return RSS.load_xml_document(XML.parse_buffer(data), description_to_bbcode)
+	return RSS.load_xml_document(XML.parse_buffer(data), description_formatter)
 
-## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
-## If [param description_to_bbcode] is set, description text
-## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSS:
+## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it applies the same for [method RSS.load_url] as it does here.
+static func load_xml_document(document:XMLDocument,
+							description_formatter:Callable = Callable(null, "invalid")
+							) -> RSS:
 	if document.root == null:
 		return null
-	return load_xml_node(document.root, description_to_bbcode)
+	return load_xml_node(document.root, description_formatter)
 
-## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
-## If [param description_to_bbcode] is set, description text
-## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSS:
+## Loads a [RSS] feed right from a given [XMLNode]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it applies the same for [method RSS.load_url] as it does here.
+static func load_xml_node(node:XMLNode,
+							description_formatter:Callable = Callable(null, "invalid")
+							) -> RSS:
 	if node.name != RSS_TAG_NAME:
 		#This isn't a rss feed at all! Perhaps you loaded html or svg data by accident?
 		return null
@@ -466,7 +482,7 @@ static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSS:
 	var created := RSS.new()
 	created.version = node.attributes.get(VERSION_ATTR_NAME, "")
 	for child in node.children:
-		created.channels.append(RSSChannel.load_xml_node(child, description_to_bbcode))
+		created.channels.append(RSSChannel.load_xml_node(child, description_formatter))
 
 	return created
 

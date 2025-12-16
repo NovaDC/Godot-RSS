@@ -56,27 +56,30 @@ const ITEM_TAG_NAME := "item"
 ## Optionally, holds all the [RSSEnclosure] data representing the item's enclosed media files.
 @export var enclosed_media:Array[RSSEnclosure] = []
 
-## Loads a [RSS] feed right from a given [String]'s [param data].
-## If [param description_to_bbcode] is set, description of rss items
-## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_string(data:String, description_to_bbcode := false) -> RSSItem:
-	return load_xml_document(XML.parse_str(data), description_to_bbcode)
+## Loads a [RSS] feed right from a given [String]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it behaves the same for this function.
+static func load_string(data:String,
+						description_formatter:Callable = Callable(null, "invalid")
+						) -> RSSItem:
+	return load_xml_document(XML.parse_str(data), description_formatter)
 
-## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
-## If [param description_to_bbcode] is set, description of rss items
-## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSItem:
+## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it behaves the same for this function.
+static func load_xml_document(document:XMLDocument,
+								description_formatter:Callable = Callable(null, "invalid")
+								) -> RSSItem:
 	if document.root == null:
 		return null
-	return load_xml_node(document.root, description_to_bbcode)
+	return load_xml_node(document.root, description_formatter)
 
-## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
-## If [param description_to_bbcode] is set, description of rss items
-## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
-## See the notes provided with [member RSS.html_to_bbcode] for more information.
-static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSItem:
+## Loads a [RSS] feed right from a given [XMLNode]'s [param data].[br]
+## See [method RSS.load_url] for more information about the [param description_formatter]
+## paramiter, as it behaves the same for this function.
+static func load_xml_node(node:XMLNode,
+							description_formatter:Callable = Callable(null, "invalid")
+							) -> RSSItem:
 	var created := RSSItem.new()
 
 	if node.name != ITEM_TAG_NAME:
@@ -90,10 +93,8 @@ static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSIt
 				created.set(child.name, child.content)
 			"description":
 				var raw_content := child.dump_str(true) if child.content == "" else child.content
-				if description_to_bbcode:
-					raw_content = RSS.html_to_bbcode(raw_content)
-				else:
-					raw_content = RSS.clean_description(raw_content)
+				if description_formatter.is_valid():
+					raw_content = description_formatter.call(raw_content)
 				created.description = raw_content
 			"author":
 				created.author_email = child.content
