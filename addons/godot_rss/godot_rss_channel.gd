@@ -155,7 +155,7 @@ static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSCh
 			"generator":
 				created.generating_software = child.content
 			"image":
-				created.channel_image = RSSImageData.load_xml_node(child)
+				created.channel_image = RSSImageData.load_xml_node(child, description_to_bbcode)
 			"lastBuildDate":
 				created.modified_date = child.content
 			"managingEditor":

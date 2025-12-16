@@ -32,17 +32,17 @@ const DEFAULT_SIZE := Vector2i(88, 31)
 @export var size := DEFAULT_SIZE
 
 ## Loads a [RSS] feed right from a given [String]'s [param data].
-static func load_string(data:String) -> RSSImageData:
-	return load_xml_document(XML.parse_str(data))
+static func load_string(data:String, description_to_bbcode := false) -> RSSImageData:
+	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
-static func load_xml_document(document:XMLDocument) -> RSSImageData:
+static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSImageData:
 	if document.root == null:
 		return null
-	return load_xml_node(document.root)
+	return load_xml_node(document.root, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
-static func load_xml_node(node:XMLNode) -> RSSImageData:
+static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSImageData:
 	var created := RSSImageData.new()
 
 	if node.name != IMAGE_TAG_NAME:
@@ -55,9 +55,11 @@ static func load_xml_node(node:XMLNode) -> RSSImageData:
 				#for both the child node and godot rss channel object
 				created.set(child.name, child.content)
 			"description":
-				var raw_content := child.dump_str()
-				raw_content = raw_content.replace("<description>", "")
-				raw_content = raw_content.replace("</description>", "")
+				var raw_content := child.dump_str(true) if child.content == "" else child.content
+				if description_to_bbcode:
+					raw_content = RSS.html_to_bbcode(raw_content)
+				else:
+					raw_content = RSS.clean_description(raw_content)
 				created.description = raw_content
 			"url":
 				created.image_url = child.content
