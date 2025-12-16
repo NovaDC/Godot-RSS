@@ -1,5 +1,5 @@
 @tool
-@icon("res://addons/godot_rss/icon.svg")
+@icon("../icon.svg")
 extends PanelContainer
 
 ## The [RSSItem] to display.

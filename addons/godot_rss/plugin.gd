@@ -4,15 +4,15 @@ extends EditorPlugin
 
 const PLUGIN_NAME := "GodotRSS"
 
-const PLUGIN_ICON := preload("res://addons/godot_rss/icon.svg")
+const PLUGIN_ICON := preload("./icon.svg")
 
 const PLUGIN_VERSION := "v1.1.0.0"
 const ENSURE_SCRIPT_DOCS:Array[Script] = [
-	preload("res://addons/godot_rss/godot_rss.gd"),
-	preload("res://addons/godot_rss/godot_rss_item.gd"),
-	preload("res://addons/godot_rss/godot_rss_image_data.gd"),
-	preload("res://addons/godot_rss/godot_rss_enclosure.gd"),
-	preload("res://addons/godot_rss/godot_rss_channel.gd"),
+	preload("./godot_rss.gd"),
+	preload("./godot_rss_item.gd"),
+	preload("./godot_rss_image_data.gd"),
+	preload("./godot_rss_enclosure.gd"),
+	preload("./godot_rss_channel.gd"),
 ]
 
 # Every once ands a while the script docs simply refuse to update properly.

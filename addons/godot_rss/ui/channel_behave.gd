@@ -1,8 +1,8 @@
 @tool
-@icon("res://addons/godot_rss/icon.svg")
+@icon("../icon.svg")
 extends PanelContainer
 
-const _ITEM_SCENE : PackedScene = preload("res://addons/godot_rss/ui/item.tscn")
+const _ITEM_SCENE : PackedScene = preload("./item.tscn")
 
 ## The [RSSChannel] to display.
 @export var channel:RSSChannel = null:
