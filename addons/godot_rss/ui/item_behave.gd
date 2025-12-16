@@ -23,6 +23,6 @@ func _ready():
 func _update():
 	if item == null:
 		return
-	
+
 	title_label.text = item.title
 	desc_label.text = item.description

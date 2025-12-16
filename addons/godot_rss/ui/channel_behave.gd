@@ -31,11 +31,11 @@ func _ready():
 func _update():
 	if channel == null or _ITEM_SCENE == null:
 		return
-	
+
 	title_label.text = channel.title
 	desc_label.text = channel.description
 	copyright_label.text = channel.copyright
-	
+
 	#Remove the example image, so it doesn't show as the real image loads.
 	channel_image.texture = null
 	var image := await channel.channel_image.get_image()
@@ -45,15 +45,15 @@ func _update():
 		channel_image.texture.set_size_override(size_override)
 	else:
 		channel_image.texture = null
-	
+
 	for child in _managed_children:
 		_managed_children.erase(child)
 		child.queue_free()
-	
+
 	for item in channel.items:
 		var new_item := _ITEM_SCENE.instantiate()
 		item_container.add_child(new_item)
 		_managed_children.append(new_item)
 		new_item.item = item
-	
+
 	set_deferred("name", channel.title)

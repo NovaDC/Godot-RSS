@@ -26,11 +26,11 @@ func _ready():
 func _update():
 	if feed == null or _CHANNEL_SCENE == null:
 		return
-	
+
 	for child in _managed_children:
 		_managed_children.erase(child)
 		child.queue_free()
-	
+
 	for channel in feed.channels:
 		var new_channel := _CHANNEL_SCENE.instantiate()
 		channel_container.add_child(new_channel)

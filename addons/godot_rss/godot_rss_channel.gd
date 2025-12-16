@@ -1,7 +1,7 @@
 @tool
 @icon("res://addons/godot_rss/icon.svg")
-extends Resource
 class_name RSSChannel
+extends Resource
 
 ## RSSChannel
 ##
@@ -112,23 +112,23 @@ const CHANNEL_TAG_NAME := "channel"
 ## Behaviour like this must be implemented manually.
 @export var cloud_protocol:String = ""
 
-## Loads a [RSS] feed right from a given [String]'s [param data]. 
+## Loads a [RSS] feed right from a given [String]'s [param data].
 static func load_string(data:String, description_to_bbcode := false) -> RSSChannel:
 	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
-## Loads a [RSS] feed right from a given [XMLDocument]'s [param data]. 
+## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
 static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSChannel:
 	if document.root == null:
 		return null
 	return load_xml_node(document.root, description_to_bbcode)
 
-## Loads a [RSS] feed right from a given [XMLNode]'s [param data]. 
+## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
 static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSChannel:
 	var created := RSSChannel.new()
-	
+
 	if node.name != CHANNEL_TAG_NAME:
 		return null
-	
+
 	for child in node.children:
 		match (child.name):
 			"title", "link", "copyright", "language":
@@ -187,8 +187,8 @@ static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSCh
 				created.ttl_min = int(child.content)
 			"webMaster":
 				created.webmaster_email = child.content
-			
+
 			"item":
 				created.items.append(RSSItem.load_xml_node(child, description_to_bbcode))
-	
+
 	return created

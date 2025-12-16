@@ -1,7 +1,7 @@
 @tool
 @icon("res://addons/godot_rss/icon.svg")
-extends Resource
 class_name RSSItem
+extends Resource
 
 ## RSSItem
 ##
@@ -9,7 +9,7 @@ class_name RSSItem
 ## Represents a [code]item[/code] as used in a [RSSChannel]. Can be generated in engine,
 ## or created using one of the included static methods to load from URLs, or files, or directly from
 ## [String]s, [PackedByteArray]s, [XMLDocument]s or [XMLNode]s.
-## This script requires the 'GodotXML' plugin to operate. 
+## This script requires the 'GodotXML' plugin to operate.
 
 ## The [XMLNode] name used for a [RSSItem].
 const ITEM_TAG_NAME := "item"
@@ -34,7 +34,7 @@ const ITEM_TAG_NAME := "item"
 ## Optionally, specifies the categories of this item as the keys,
 ## optionally with a non empty string value representing the category's domain
 ## (using either a general name or a url) that that defines that specific category's taxonomy
-## (what catagories are what and what they mean).[br]
+## (what categories are what and what they mean).[br]
 ## The categories are in addition to the categories
 ## specified in the channel that this item is in as well.[br]
 ## Some example entries for this dictionary:
@@ -51,28 +51,28 @@ const ITEM_TAG_NAME := "item"
 ## When [guid_is_permalink] is [code]true[/code] (by default it is),
 ## this guid is expected to be a url permalink to this specific item.
 @export var guid:String = ""
-## When true (dy default it is), guid is also a permalink to this specific item.
+## When true (by default it is), guid is also a permalink to this specific item.
 @export var guid_is_permalink:bool = true
 ## Optionally, holds all the [RSSEnclosure] data representing the item's enclosed media files.
 @export var enclosed_media:Array[RSSEnclosure] = []
 
-## Loads a [RSS] feed right from a given [String]'s [param data]. 
+## Loads a [RSS] feed right from a given [String]'s [param data].
 static func load_string(data:String, description_to_bbcode := false) -> RSSItem:
 	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
-## Loads a [RSS] feed right from a given [XMLDocument]'s [param data]. 
+## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
 static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSItem:
 	if document.root == null:
 		return null
 	return load_xml_node(document.root, description_to_bbcode)
 
-## Loads a [RSS] feed right from a given [XMLNode]'s [param data]. 
+## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
 static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSItem:
 	var created := RSSItem.new()
-	
+
 	if node.name != ITEM_TAG_NAME:
 		return null
-	
+
 	for child in node.children:
 		match (child.name):
 			"title", "link":
@@ -106,8 +106,8 @@ static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSIt
 			"source":
 				created.source_name = child.content
 				created.source_url = child.attributes.get("url", "")
-			
+
 			"enclosure":
 				created.enclosed_media.append(RSSEnclosure.load_xml_node(child))
-	
+
 	return created

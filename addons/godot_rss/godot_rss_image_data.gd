@@ -1,7 +1,7 @@
 @tool
 @icon("res://addons/godot_rss/icon.svg")
-extends Resource
 class_name RSSImageData
+extends Resource
 
 ## RSSImageData
 ##
@@ -9,7 +9,7 @@ class_name RSSImageData
 ## Represent a [code]channel[/code]'s image as used in a [RSSChannel]. Can be generated in engine,
 ## or created using one of the included static methods to load from URLs, or files, or directly from
 ## [String]s, [PackedByteArray]s, [XMLDocument]s or [XMLNode]s.
-## This script requires the 'GodotXML' plugin to operate. 
+## This script requires the 'GodotXML' plugin to operate.
 
 ## The [XMLNode] name used for a [RSSImageData].
 const IMAGE_TAG_NAME := "image"
@@ -31,23 +31,23 @@ const DEFAULT_SIZE := Vector2i(88, 31)
 ## Height will default to 31, and width will default to 88 if not explicitly specified.
 @export var size := DEFAULT_SIZE
 
-## Loads a [RSS] feed right from a given [String]'s [param data]. 
+## Loads a [RSS] feed right from a given [String]'s [param data].
 static func load_string(data:String) -> RSSImageData:
 	return load_xml_document(XML.parse_str(data))
 
-## Loads a [RSS] feed right from a given [XMLDocument]'s [param data]. 
+## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
 static func load_xml_document(document:XMLDocument) -> RSSImageData:
 	if document.root == null:
 		return null
 	return load_xml_node(document.root)
 
-## Loads a [RSS] feed right from a given [XMLNode]'s [param data]. 
+## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
 static func load_xml_node(node:XMLNode) -> RSSImageData:
 	var created := RSSImageData.new()
-	
+
 	if node.name != IMAGE_TAG_NAME:
 		return null
-	
+
 	for child in node.children:
 		match (child.name):
 			"title", "link":
@@ -65,7 +65,7 @@ static func load_xml_node(node:XMLNode) -> RSSImageData:
 				created.size.y = int(child.content)
 			"width":
 				created.size.x = int(child.content)
-	
+
 	return created
 
 ## Attempts to load the image at the given [member image_url].[br]

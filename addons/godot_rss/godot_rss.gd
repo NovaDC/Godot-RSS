@@ -1,23 +1,77 @@
 @tool
 @icon("res://addons/godot_rss/icon.svg")
-extends Resource
 class_name RSS
+extends Resource
 
 ## RSS
 ##
 ## A class used to enclose an rss feed, inclusing all it's channels. Can be generated in engine,
 ## or created using one of the included static methods to load from URLs, or files, or directly from
 ## [String]s, [PackedByteArray]s, [XMLDocument]s or [XMLNode]s.
-## This script requires the 'GodotXML' plugin to operate. 
+## This script requires the 'GodotXML' plugin to operate.
 ## NOTE: This does [b]NOT[/b] support parsing ATOM feeds.
+
+## A enum containing the days of the week mapping a RSS channel's
+## [code]skipDays[/code] optional tag.
+enum RSSDay {
+	SUNDAY = 1,
+	MONDAY,
+	TUESDAY,
+	WEDNESDAY,
+	THURSDAY,
+	FRIDAY,
+	SATURDAY
+}
+
+const _STR_TO_RSS_DAY:Dictionary = {
+	"sun" : RSSDay.SUNDAY,
+	"mon" : RSSDay.MONDAY,
+	"tue" : RSSDay.TUESDAY,
+	"wed" : RSSDay.WEDNESDAY,
+	"thu" : RSSDay.THURSDAY,
+	"fri" : RSSDay.FRIDAY,
+	"sat" : RSSDay.SATURDAY
+}
+
+## The [XMLNode] name used for [RSS] data.
+const RSS_TAG_NAME := "rss"
+## The [XMLNode] attribute name used to declare the [RSS] version used.
+const VERSION_ATTR_NAME := "version"
+## The default headers used when getting http data.
+const DEFAULT_HTTP_HEADERS:Array[String] = ["User-Agent: GodotRSSClient/1.0 (Godot)",
+											"Accept: " +
+													"application/rss+xml," +
+													"text/xml," +
+													"application/xml," +
+													"text/plain;q=0.9," +
+													"application/atom+xml;q=0.8," +
+													"text/*;q=0.7," +
+													"application/*;q=0.5," +
+													"*/*;q=0.1",
+											"Accept-Encoding: identity"]
 
 static var _comment_remove := RegEx.create_from_string("<!--(.*?)-->")
 static var _cdata_strip := RegEx.create_from_string("<!\\[CDATA\\[(?<content>[^\\]]+?)\\]\\]>")
 static var _man_close_re_cache:Dictionary = {}
 static var _auto_close_re_cache:Dictionary = {}
-static var _anchor_href_capture_regex := RegEx.create_from_string("<\\s*a\\s*(?:.*?\\s*)??(href ?= ?[\"'](?<href>[^\"']+?)[\"'])(?:.*?\\s*)?>(?<content>.+?)<\\s*/\\s*a\\s*>")
+static var _anchor_href_capture_regex := RegEx.create_from_string(
+"<\\s*a\\s*(?:.*?\\s*)??(href ?= ?[\"'](?<href>[^\"']+?)[\"'])(?:.*?\\s*)?>" +
+"(?<content>.+?)" +
+"<\\s*/\\s*a\\s*>"
+)
 
-static func replace_html_tag_manual_closing(html:String, tag_names:Variant = ".+?", opening_with := "", closing_with := "", include_contents := true) -> String:
+## The version of RSS used in this RSS feed.
+@export var version := ""
+
+## The [RSSChannel]s used in this RSS feed.
+@export var channels:Array[RSSChannel] = []
+
+static func replace_html_tag_manual_closing(html:String,
+											tag_names:Variant = ".+?",
+											opening_with := "",
+											closing_with := "",
+											include_contents := true
+											) -> String:
 	match typeof(tag_names):
 		TYPE_STRING:
 			tag_names = [tag_names]
@@ -46,7 +100,10 @@ static func replace_html_tag_manual_closing(html:String, tag_names:Variant = ".+
 		html = norm_html_tags.sub(html, sub, true)
 	return html
 
-static func replace_html_tag_self_closing(html:String, tag_names:Variant = ".+?", with := "") -> String:
+static func replace_html_tag_self_closing(html:String,
+										tag_names:Variant = ".+?",
+										with := ""
+										) -> String:
 	match typeof(tag_names):
 		TYPE_STRING:
 			tag_names = [tag_names]
@@ -71,11 +128,16 @@ static func html_remove_comments(html:String) -> String:
 static func html_strip_cdata_braces(html:String) -> String:
 	return _cdata_strip.sub(html, "$content", true)
 
-static func clean_description(html:String, bbcode_escape_braces := false, xml_unescape := true, strip_tags := true) -> String:
+static func clean_description(html:String,
+							bbcode_escape_braces := false,
+							xml_unescape := true,
+							strip_tags := true
+							) -> String:
 	html = html_strip_cdata_braces(html)
 	html = html_remove_comments(html)
 
-	# while its quite unlikely that a rss text body would have an entire html document in it, its not impossible.
+	# While its quite unlikely that a rss text body would
+	# have an entire html document in it, its not impossible.
 	# just filtering out the absolutely unecessary stuff for safety...
 	var bad_elements := PackedStringArray([
 											"head",
@@ -122,7 +184,8 @@ static func html_to_bbcode(html:String) -> String:
 	# but bbcode bracket escaping is necessary to do before we insert any bbcode tags
 	html = clean_description(html, true, false, false)
 
-	# This converts anchor tags (and only anchor tags) into a url element with a tooltip for the link it directs to
+	# This converts anchor tags (and only anchor tags)
+	# into a url element with a tooltip for the link it directs to.
 	html = _anchor_href_capture_regex.sub(html, "[url=$href][hint=$href]$content[/hint][/url]", true)
 
 	html = replace_html_tag_self_closing(html, "wbr", "[shy]")
@@ -177,52 +240,16 @@ static func html_to_bbcode(html:String) -> String:
 
 	return html.xml_unescape()
 
-## A enum containing the days of the week mapping a RSS channel's [code]skipDays[/code] optional tag.
-enum RSSDay {
-	Sunday = 1,
-	Monday,
-	Tuesday,
-	Wednesday,
-	Thursday,
-	Friday,
-	Saturday
-}
-
-const _STR_TO_RSS_DAY:Dictionary = {
-	"sun" : RSSDay.Sunday,
-	"mon" : RSSDay.Monday,
-	"tue" : RSSDay.Tuesday,
-	"wed" : RSSDay.Wednesday,
-	"thu" : RSSDay.Thursday,
-	"fri" : RSSDay.Friday,
-	"sat" : RSSDay.Saturday
-}
-
-## The [XMLNode] name used for [RSS] data.
-const RSS_TAG_NAME := "rss"
-## The [XMLNode] attribute name used to declair the [RSS] version used.
-const VERSION_ATTR_NAME := "version"
-## The default headers used when getting http data.
-const DEFAULT_HTTP_HEADERS:Array[String] = ["User-Agent: GodotRSSClient/1.0 (Godot)",
-"Accept: application/rss+xml,text/xml,application/xml,text/plain;q=0.9,application/atom+xml;q=0.8,text/*;q=0.7,application/*;q=0.5,*/*;q=0.1",
-"Accept-Encoding: identity"]
-
-## The version of RSS used in this RSS feed.
-@export var version := ""
-
-## The [RSSChannel]s used in this RSS feed.
-@export var channels:Array[RSSChannel] = []
-
 ## Gets [PackedByteArray] data from the given [param host] URL at the given [param path].[br]
 ## Due to how Godot handels http, it's important to accurately split the
 ## URL's [param host] from the URL's [param path]. See [method url_split_host_path].[br]
 ## When [param port] [code]< 0[/code], the appropriate port will be automatically determined from
 ## the [param host]'s scheme, if given.
 static func get_http_bytes(host:String,
-						   path := "/",
-						   headers:Array[String] = DEFAULT_HTTP_HEADERS,
-						   port:int = -1
-						  ) -> PackedByteArray:
+						path := "/",
+						headers:Array[String] = DEFAULT_HTTP_HEADERS,
+						port:int = -1
+						) -> PackedByteArray:
 	var http_client := HTTPClient.new()
 
 	if host.is_empty():
@@ -281,45 +308,45 @@ static func load_file(path:String) -> RSS:
 ## NOTE: This RSS feed is statically fetched and will not automatically update itself.
 ## Behaviour like this must be implemented manually.
 static func load_url(host:String,
-					 path := "/",
-					 description_to_bbcode := false,
-					 headers:Array[String] = DEFAULT_HTTP_HEADERS,
-					 port:int = -1
+					path := "/",
+					description_to_bbcode := false,
+					headers:Array[String] = DEFAULT_HTTP_HEADERS,
+					port:int = -1
 					) -> RSS:
 	var rb := await get_http_bytes(host, path, headers, port)
-	
+
 	if rb.is_empty():
 		return null
-	
+
 	return load_data(rb, description_to_bbcode)
 
-## Loads a [RSS] feed right from a given [String]'s [param data]. 
+## Loads a [RSS] feed right from a given [String]'s [param data].
 static func load_string(data:String, description_to_bbcode := false) -> RSS:
 	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
-## Loads a [RSS] feed right from a given [PackedByteArray]'s [param data]. 
+## Loads a [RSS] feed right from a given [PackedByteArray]'s [param data].
 static func load_data(data:PackedByteArray, description_to_bbcode := false) -> RSS:
 	if data.is_empty():
 		return
 	return RSS.load_xml_document(XML.parse_buffer(data), description_to_bbcode)
 
-## Loads a [RSS] feed right from a given [XMLDocument]'s [param data]. 
+## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
 static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSS:
 	if document.root == null:
 		return null
 	return load_xml_node(document.root, description_to_bbcode)
 
-## Loads a [RSS] feed right from a given [XMLNode]'s [param data]. 
+## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
 static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSS:
 	if node.name != RSS_TAG_NAME:
 		#This isn't a rss feed at all! Perhaps you loaded html or svg data by accident?
 		return null
-	
+
 	var created := RSS.new()
 	created.version = node.attributes.get(VERSION_ATTR_NAME, "")
 	for child in node.children:
 		created.channels.append(RSSChannel.load_xml_node(child, description_to_bbcode))
-	
+
 	return created
 
 ## Converts a given [param string] to a [RSSDay] as expected when parsing a [RSSChannel]'s
