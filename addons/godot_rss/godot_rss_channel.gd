@@ -14,7 +14,6 @@ extends Resource
 ## The [XMLNode] name used for a [RSSChannel].
 const CHANNEL_TAG_NAME := "channel"
 
-
 ## The title/name of the channel.
 @export var title:String = ""
 ## A description of the channel.
@@ -113,16 +112,25 @@ const CHANNEL_TAG_NAME := "channel"
 @export var cloud_protocol:String = ""
 
 ## Loads a [RSS] feed right from a given [String]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_string(data:String, description_to_bbcode := false) -> RSSChannel:
 	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSChannel:
 	if document.root == null:
 		return null
 	return load_xml_node(document.root, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSChannel:
 	var created := RSSChannel.new()
 

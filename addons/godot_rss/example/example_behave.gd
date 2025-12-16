@@ -1,5 +1,7 @@
 extends Control
 
+## If set, html descriptions be roughly converted into bbcode.
+## Otherwise, html formatting sill be stripped.
 @export var description_to_bbcode := true
 
 @onready var feed_container:Control = $VBoxContainer/Feed

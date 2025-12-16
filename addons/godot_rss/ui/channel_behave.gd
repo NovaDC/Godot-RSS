@@ -4,6 +4,7 @@ extends PanelContainer
 
 const _ITEM_SCENE : PackedScene = preload("res://addons/godot_rss/ui/item.tscn")
 
+## The [RSSChannel] to display.
 @export var channel:RSSChannel = null:
 	get:
 		return channel
@@ -15,6 +16,7 @@ const _ITEM_SCENE : PackedScene = preload("res://addons/godot_rss/ui/item.tscn")
 			channel.changed.connect(_update)
 		_update()
 
+## The maximum size in pixels for the [member RSSChannel.channel_image].
 @export var image_size_max := Vector2.ONE * 64
 
 var _managed_children:Array[Control] = []

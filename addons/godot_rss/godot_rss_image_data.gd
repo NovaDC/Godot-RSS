@@ -32,16 +32,25 @@ const DEFAULT_SIZE := Vector2i(88, 31)
 @export var size := DEFAULT_SIZE
 
 ## Loads a [RSS] feed right from a given [String]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_string(data:String, description_to_bbcode := false) -> RSSImageData:
 	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSImageData:
 	if document.root == null:
 		return null
 	return load_xml_node(document.root, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted from html into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSImageData:
 	var created := RSSImageData.new()
 

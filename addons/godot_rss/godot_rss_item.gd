@@ -57,16 +57,25 @@ const ITEM_TAG_NAME := "item"
 @export var enclosed_media:Array[RSSEnclosure] = []
 
 ## Loads a [RSS] feed right from a given [String]'s [param data].
+## If [param description_to_bbcode] is set, description of rss items
+## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_string(data:String, description_to_bbcode := false) -> RSSItem:
 	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
+## If [param description_to_bbcode] is set, description of rss items
+## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSSItem:
 	if document.root == null:
 		return null
 	return load_xml_node(document.root, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
+## If [param description_to_bbcode] is set, description of rss items
+## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSSItem:
 	var created := RSSItem.new()
 

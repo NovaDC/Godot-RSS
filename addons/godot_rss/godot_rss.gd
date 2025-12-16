@@ -9,7 +9,8 @@ extends Resource
 ## or created using one of the included static methods to load from URLs, or files, or directly from
 ## [String]s, [PackedByteArray]s, [XMLDocument]s or [XMLNode]s.
 ## This script requires the 'GodotXML' plugin to operate.
-## NOTE: This does [b]NOT[/b] support parsing ATOM feeds.
+## NOTE: This does [b]NOT[/b] support parsing ATOM feeds, only RSS.
+## RSS and ATOM feeds are 2 distinct separate formats.
 
 ## A enum containing the days of the week mapping a RSS channel's
 ## [code]skipDays[/code] optional tag.
@@ -58,6 +59,16 @@ static var _comment_remove := RegEx.create_from_string("<!--(.*?)-->")
 static var _cdata_strip := RegEx.create_from_string("<!\\[CDATA\\[(?<content>[^\\]]+?)\\]\\]>")
 static var _man_close_re_cache:Dictionary = {}
 static var _auto_close_re_cache:Dictionary = {}
+static var _title_attr_capture_regex := RegEx.create_from_string(
+"(?<tagstart><\\s*(?<tagname>[_a-zA-Z0-9]+)\\s*(?:.*?\\s*)??(title ?= ?[\"'](?<title>[^\"']+?)[\"'])(?:.*?\\s*)??>)" +
+"(?<content>.+?)" +
+"(?<tagend><\\s*/\\s*\\k<tagname>\\s*>)"
+)
+static var _lang_attr_capture_regex := RegEx.create_from_string(
+"(?<tagstart><\\s*(?<tagname>[_a-zA-Z0-9]+)\\s*(?:.*?\\s*)??((xml:)?lang ?= ?[\"'](?<lang>[^\"']+?)[\"'])(?:.*?\\s*)??>)" +
+"(?<content>.+?)" +
+"(?<tagend><\\s*/\\s*\\k<tagname>\\s*>)"
+)
 static var _anchor_href_capture_regex := RegEx.create_from_string(
 "<\\s*a\\s*(?:.*?\\s*)??(href ?= ?[\"'](?<href>[^\"']+?)[\"'])(?:.*?\\s*)?>" +
 "(?<content>.+?)" +
@@ -70,6 +81,26 @@ static var _anchor_href_capture_regex := RegEx.create_from_string(
 ## The [RSSChannel]s used in this RSS feed.
 @export var channels:Array[RSSChannel] = []
 
+## @experimental: This function may not handle all html documents properly.
+## @experimental: This function may be heavily refactored or removed in the future.
+## A static function that replaces any html element (that [b]is not[/b] self closing)
+## with the given [param tag_names]
+## in the provided [param html] body, returning the result.[br]
+## [param tag_names] may be either a single [String] or an
+## [Array] (or [PackedStringArray]) of [String]s.[br]
+## By default this will match all tags (using the [code].?+[/code] regex pattern).[br]
+## Multiple tag names will be handled in the order they are iterated from the array.[br]
+## All names in [param tag_names] must be treated as (uncompiled) strings of [RegEx] patterns,
+## including them having the ability to contain wildcard patterns like [code].?+[/code],
+## and must be escaped as a regex pattern, if necessary.
+## Its opening tag is replaced with [param opening_with],
+## and its closing tag with [param closing_with].
+## When [param include_contents] is true (as by default),
+## the contents (the remainder of the string contained within the tag,
+## including both text and other elements)
+## will be inserted between [param opening_with] and [param closing_with].[br]
+## [br]
+## For handling html tags that [b]are[/b] self closing, see [method replace_html_tag_self_closing].
 static func replace_html_tag_manual_closing(html:String,
 											tag_names:Variant = ".+?",
 											opening_with := "",
@@ -104,6 +135,22 @@ static func replace_html_tag_manual_closing(html:String,
 		html = norm_html_tags.sub(html, sub, true)
 	return html
 
+## @experimental: This function may not handle all html documents properly.
+## @experimental: This function may be heavily refactored or removed in the future.
+## A static function that replaces any html element (that [b]is[/b] self closing)
+## with the given [param tag_names]
+## in the provided [param html] body, returning the result.[br]
+## [param tag_names] may be either a single [String] or an
+## [Array] (or [PackedStringArray]) of [String]s.[br]
+## By default this will match all tags (using the [code].?+[/code] regex pattern).[br]
+## Multiple tag names will be handled in the order they are iterated from the array.[br]
+## All names in [param tag_names] must be treated as (uncompiled) strings of [RegEx] patterns,
+## including them having the ability to contain wildcard patterns like [code].?+[/code],
+## and must be escaped as a regex pattern, if necessary.
+## The html element matched is entirely replaced with [param with].[br]
+## [br]
+## For handling html tags that [b]are not[/b] self closing,
+## see [method replace_html_tag_manual_closing].
 static func replace_html_tag_self_closing(html:String,
 										tag_names:Variant = ".+?",
 										with := ""
@@ -126,19 +173,56 @@ static func replace_html_tag_self_closing(html:String,
 		html = norm_html_tags.sub(html, with, true)
 	return html
 
+## @experimental: This function may not handle all html documents properly.
+## @experimental: This function may be heavily refactored or removed in the future.
+## A static function that removes any html comment in the provided [param html] body.[br]
 static func html_remove_comments(html:String) -> String:
 	return _comment_remove.sub(html, "", true)
 
+## @experimental: This function may be heavily refactored or removed in the future.
+## A static function that strips away the surrounding characters of a html CDATA element.[br][br]
+## Note that CDATA elements are more used in xml contexts,
+## and used in cases where the parser should not parse the content inside the
+## CDATA elements.
+## Ex:
+## [codeblock]
+## <[![CDATA
+## 		(!simple && !elegant) > nothing //Improve it next time
+## ]]>
+## [/codeblock]
+## turns into
+## [codeblock]
+## (!simple && !elegant) > nothing //Improve it next time
+## [/codeblock]
+## instead of raising a parsing error.[br]
 static func html_strip_cdata_braces(html:String) -> String:
 	return _cdata_strip.sub(html, "$content", true)
 
-static func clean_description(html:String,
+## @experimental: This function may not handle all html documents properly.
+## @experimental: This function may be heavily refactored in the future.
+## "Cleans" the text (as provided in [param desc])
+## as xml text sourced from a rss description (or similarly formatted) feild,
+## in various ways, returning the result.
+## [br][br]
+## Regardless of [param strip_tags],
+## certain problematic html tags will always be erased entirely
+## (removing both the tags themselves and the content within the element).[br]
+## All whitespace (besides the space character (" ") itself) will be removed.[br]
+## All space characters (" ") will be deduplicated
+## (multiple consecutive " " characters will be converted into a single one).
+## All html/xml comments will be removed.
+## [br][br]
+## When [param strip_tags] is set (as by default),
+## all html/xml tags will be stripped without removing their internal text elements.
+## When [param xml_unescape] is set (as by default), text elements will be unescaped.[br]
+## When [param xml_unescape] is set ([b]not[/b] by default),
+## all square braces will be escaped for use in bbcode.
+static func clean_description(desc:String,
 							bbcode_escape_braces := false,
 							xml_unescape := true,
 							strip_tags := true
 							) -> String:
-	html = html_strip_cdata_braces(html)
-	html = html_remove_comments(html)
+	desc = html_remove_comments(desc)
 
 	# While its quite unlikely that a rss text body would
 	# have an entire html document in it, its not impossible.
@@ -153,17 +237,18 @@ static func clean_description(html:String,
 											"form",
 											])
 	# removing the tags and their contents
-	html = replace_html_tag_manual_closing(html, bad_elements, "", "", false)
+	desc = replace_html_tag_manual_closing(desc, bad_elements, "", "", false)
 
 	if strip_tags:
-		html = replace_html_tag_manual_closing(html) #all tags
-		html = replace_html_tag_self_closing(html) #all tags
+		desc = replace_html_tag_manual_closing(desc) #all tags
+		desc = replace_html_tag_self_closing(desc) #all tags
 
 	if xml_unescape:
-		html = html.xml_unescape()
+		desc = desc.xml_unescape()
+	desc = html_strip_cdata_braces(desc)
 
 	var buff := ""
-	for c in html:
+	for c in desc:
 		match c:
 			# basically the same as String.trim_escapes()
 			# but wrapped into another loop we already have to do
@@ -183,10 +268,30 @@ static func clean_description(html:String,
 	#we already stripped left spaces in the loop above, so we can save some time here
 	return buff.strip_edges(false, true)
 
+## @experimental: This function may not handle all html documents properly.
+## @experimental: This function may be heavily refactored in the future.
+## An experimental method that takes a text body (as provided in [param html])
+## as xml text sourced from a rss description (or similarly formatted) feild and
+## attempts to roughly translate any html formatting into godot compatible bbcode.[br]
+## This method can currently only handle the formatting implied by certain html tags.
+## The only tags that have their attributes parsed are anchor ([code]a[/code]) tags.[br]
+## Any embeddings contained within the provided [param html] are stripped and ignored,
+## along with all javascript, css formatting (inline or linked), all iframes,
+## and many other common features of html.
+## [br][br]
+## This method is provided as a rough example that allows for the majority
+## of html text to be handled roughly. It is not suggested to be used as-is in any production environment
+## without proper consideration.
+## It is also of note that this method is not optimised for performance,
+## using [RegEx] parsing instead of a proper xml parser,
+## and will likely not perform well in most cases.
 static func html_to_bbcode(html:String) -> String:
 	# We'll handle other (non useless) html tags and unescaping manually,
 	# but bbcode bracket escaping is necessary to do before we insert any bbcode tags
 	html = clean_description(html, true, false, false)
+
+	html = _title_attr_capture_regex.sub(html, "$tagstart[hint=$href]$content[/hint]$tagend", true)
+	html = _lang_attr_capture_regex.sub(html, "$tagstart[hint=$href]$content[/hint]$tagend", true)
 
 	# This converts anchor tags (and only anchor tags)
 	# into a url element with a tooltip for the link it directs to.
@@ -325,22 +430,34 @@ static func load_url(host:String,
 	return load_data(rb, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [String]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_string(data:String, description_to_bbcode := false) -> RSS:
 	return load_xml_document(XML.parse_str(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [PackedByteArray]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_data(data:PackedByteArray, description_to_bbcode := false) -> RSS:
 	if data.is_empty():
 		return
 	return RSS.load_xml_document(XML.parse_buffer(data), description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLDocument]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_xml_document(document:XMLDocument, description_to_bbcode := false) -> RSS:
 	if document.root == null:
 		return null
 	return load_xml_node(document.root, description_to_bbcode)
 
 ## Loads a [RSS] feed right from a given [XMLNode]'s [param data].
+## If [param description_to_bbcode] is set, description text
+## will roughly be converted into bbcode. This paramiter's feature is currently [b]experimental[/b].
+## See the notes provided with [member RSS.html_to_bbcode] for more information.
 static func load_xml_node(node:XMLNode, description_to_bbcode := false) -> RSS:
 	if node.name != RSS_TAG_NAME:
 		#This isn't a rss feed at all! Perhaps you loaded html or svg data by accident?
