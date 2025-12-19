@@ -10,13 +10,15 @@ config_version=5
 
 [application]
 
-config/name="Godot RSS"
-config/description="A plugin for godot that parses and displays RSS feeds in engine (and editor)."
-config/version="1.0.0.0"
+config/name="Godot-RSS"
+config/description="A godot plugin for parsing and displaying RSS feeds in engine and editor.
+NOTE: Requires the GodotXML addon (https://github.com/elenakrittik/GodotXML) as a dependency.
+NOTE: This only supports RSS feeds and not Atom feeds."
+config/version="v1.1.0.0"
 run/main_scene="uid://cikrmqutf5kc3"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/image="uid://gcf4xwnd5dv5"
-config/icon="uid://gcf4xwnd5dv5"
+config/icon="uid://chmuiwtrj1xx2"
 
 [rendering]
 

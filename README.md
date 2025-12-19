@@ -1,7 +1,9 @@
 # Godot-RSS
 
-A plugin for Godot that parses and displays RSS feeds in engine (and editor).
+A godot plugin for parsing and displaying RSS feeds in engine and editor.
 
-NOTE: This plugin currently only supports RSS feeds and not ATOM feeds.
+NOTE: Requires the [GodotXML addon](https://github.com/elenakrittik/GodotXML) as a dependency.
 
-NOTE: This plugin includes the GodotXML addon, which is a dependency for this plugin to work. The GodotXML plugin is not originally created by me and was taken from [here](https://github.com/elenakrittik/GodotXML).
+NOTE: This only supports RSS feeds and not Atom feeds.
+
+![Godot RSS Icon](./icon.png "Icon")

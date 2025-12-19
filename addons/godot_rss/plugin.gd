@@ -6,7 +6,7 @@ const PLUGIN_NAME := "GodotRSS"
 
 const PLUGIN_ICON := preload("./icon.svg")
 
-const PLUGIN_VERSION := "v1.1.0.0"
+const PLUGIN_VERSION := "1.1.0.0"
 const ENSURE_SCRIPT_DOCS:Array[Script] = [
 	preload("./rss.gd"),
 	preload("./item.gd"),
