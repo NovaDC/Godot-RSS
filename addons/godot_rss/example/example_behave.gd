@@ -14,7 +14,10 @@ func _process(_delta:float):
 	position = Vector2.ZERO
 
 func _on_load_rss():
+	var formatter := RSSExampleFormattingTools.clean_description
+	if description_to_bbcode:
+		formatter = RSSExampleFormattingTools.html_to_bbcode
 	feed_container.feed = await RSS.load_url(host_textedit.text,
 											path_textedit.text,
-											RSS.clean_description if not description_to_bbcode else RSS.html_to_bbcode
+											formatter
 											)
