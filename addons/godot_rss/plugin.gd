@@ -8,11 +8,11 @@ const PLUGIN_ICON := preload("./icon.svg")
 
 const PLUGIN_VERSION := "v1.1.0.0"
 const ENSURE_SCRIPT_DOCS:Array[Script] = [
-	preload("./godot_rss.gd"),
-	preload("./godot_rss_item.gd"),
-	preload("./godot_rss_image_data.gd"),
-	preload("./godot_rss_enclosure.gd"),
-	preload("./godot_rss_channel.gd"),
+	preload("./rss.gd"),
+	preload("./item.gd"),
+	preload("./image_data.gd"),
+	preload("./enclosure.gd"),
+	preload("./channel.gd"),
 ]
 
 # Every once ands a while the script docs simply refuse to update properly.
